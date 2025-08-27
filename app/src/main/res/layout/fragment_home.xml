@@ -30,7 +30,9 @@
                 android:id="@+id/btnSwitchLedger"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/home_switch_ledger" />
+                android:text="@string/home_switch_ledger"
+                android:textColor="@color/primary"
+                android:backgroundTint="@android:color/transparent" />
 
             <Space
                 android:layout_width="12dp"
@@ -40,7 +42,9 @@
                 android:id="@+id/btnSearchBills"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/home_search_bills" />
+                android:text="@string/home_search_bills"
+                android:textColor="@color/primary"
+                android:backgroundTint="@android:color/transparent" />
         </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView
@@ -97,7 +101,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/home_action_expense" />
+                android:text="@string/home_action_expense"
+                android:textColor="@color/primary"
+                android:backgroundTint="@android:color/transparent" />
 
             <Space
                 android:layout_width="12dp"
@@ -108,7 +114,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/home_action_income" />
+                android:text="@string/home_action_income"
+                android:textColor="@color/primary"
+                android:backgroundTint="@android:color/transparent" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

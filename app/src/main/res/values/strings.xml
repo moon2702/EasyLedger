@@ -6,6 +6,12 @@
     <string name="title_stats">统计</string>
     <string name="title_settings">设置</string>
 
+    <string name="previous_month">上一个月</string>
+    <string name="next_month">下一个月</string>
+    <string name="expense">支出</string>
+    <string name="income">收入</string>
+    <string name="select_a_date">请选择一个日期</string>
+
     <string name="home_summary_title">本月收支</string>
     <string name="home_summary_value">+0.00</string>
     <string name="home_summary_desc">收入 0.00 · 支出 0.00</string>

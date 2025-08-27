@@ -60,14 +60,14 @@ public class HomeFragment extends Fragment {
         list.add(new RecentBill("咖啡", "餐饮 · 信用卡", "2025-08-19 14:20", "-18.00", true));
         list.add(new RecentBill("退款", "其他 · 支付宝", "2025-08-18 12:30", "+35.00", false));
         list.add(new RecentBill("晚餐", "餐饮 · 信用卡", "2025-08-20 19:30", "-89.00", true));
-        list.add(new RecentBill("電影票", "娛樂 · 支付寶", "2025-08-19 21:15", "-55.00", true));
-        list.add(new RecentBill("房租", "生活 · 銀行轉帳", "2025-08-01 11:00", "-2500.00", true));
-        list.add(new RecentBill("理財收益", "收入 · 銀行轉帳", "2025-08-15 14:45", "+250.00", false));
-        list.add(new RecentBill("超市購物", "購物 · 微信", "2025-08-17 17:50", "-156.80", true));
-        list.add(new RecentBill("電話費", "生活 · 微信", "2025-08-05 16:30", "-50.00", true));
-        list.add(new RecentBill("兼職收入", "收入 · 支付寶", "2025-08-10 18:00", "+300.00", false));
-        list.add(new RecentBill("買書", "學習 · 信用卡", "2025-08-18 10:20", "-99.00", true));
-        list.add(new RecentBill("體育館會員費", "運動 · 信用卡", "2025-08-08 09:30", "-360.00", true));
+        list.add(new RecentBill("电影票", "娱乐 · 支付宝", "2025-08-19 21:15", "-55.00", true));
+        list.add(new RecentBill("房租", "生活 · 银行记账", "2025-08-01 11:00", "-2500.00", true));
+        list.add(new RecentBill("理财收入", "收入 · 银行记账", "2025-08-15 14:45", "+250.00", false));
+        list.add(new RecentBill("超市购物", "购物 · 微信", "2025-08-17 17:50", "-156.80", true));
+        list.add(new RecentBill("电话费", "生活 · 微信", "2025-08-05 16:30", "-50.00", true));
+        list.add(new RecentBill("兼职收入", "收入 · 支付宝", "2025-08-10 18:00", "+300.00", false));
+        list.add(new RecentBill("买书", "学习 · 信用卡", "2025-08-18 10:20", "-99.00", true));
+        list.add(new RecentBill("会员费", "运动 · 信用卡", "2025-08-08 09:30", "-360.00", true));
         return list;
     }
 }

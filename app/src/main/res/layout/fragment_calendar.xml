@@ -1,15 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/title_calendar"
-        android:textAppearance="@style/TextAppearance.Material3.TitleLarge" />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 标题栏 -->
+            <LinearLayout
+                android:id="@+id/calendar_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="4dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <Button
+                    android:id="@+id/btn_prev_month"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/previous_month"
+                    android:textColor="@color/primary"
+                    android:backgroundTint="@android:color/transparent" />
+
+                <TextView
+                    android:id="@+id/tv_current_month"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/title_calendar"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                    android:textColor="@color/on_background" />
+
+                <Button
+                    android:id="@+id/btn_next_month"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/next_month"
+                    android:textColor="@color/primary"
+                    android:backgroundTint="@android:color/transparent" />
+            </LinearLayout>
+
+            <!-- 日历控件卡片 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="16dp"
+                app:shapeAppearance="@style/ShapeAppearance.EasyLedger.Medium">
+
+                <CalendarView
+                    android:id="@+id/calendar_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:layout_margin="16dp"
+                    android:dateTextAppearance="@style/CalendarDateText"
+                    android:weekDayTextAppearance="@style/CalendarWeekDayText" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 支出/收入指示器 -->
+            <LinearLayout
+                android:id="@+id/expense_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="16dp"
+                android:layout_marginTop="16dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginEnd="16dp">
+                    <View
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:background="@color/red"
+                        android:layout_marginEnd="4dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/expense"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <View
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:background="@color/green"
+                        android:layout_marginEnd="4dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/income"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 选中日期信息卡片 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                app:shapeAppearance="@style/ShapeAppearance.EasyLedger.Medium">
+
+                <TextView
+                    android:id="@+id/tv_selected_date_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/select_a_date"
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:padding="16dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </FrameLayout>
 
 

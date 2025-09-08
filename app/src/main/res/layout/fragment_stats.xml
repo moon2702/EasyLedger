@@ -1,15 +1,415 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- 顶部标签栏 -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/title_stats"
-        android:textAppearance="@style/TextAppearance.Material3.TitleLarge" />
+        app:tabMode="scrollable">
+        <com.google.android.material.tabs.TabItem
+            android:text="日常" />
+        <com.google.android.material.tabs.TabItem
+            android:text="月统计" />
+        <com.google.android.material.tabs.TabItem
+            android:text="年统计" />
+        <com.google.android.material.tabs.TabItem
+            android:text="自定义" />
+    </com.google.android.material.tabs.TabLayout>
 
-</FrameLayout>
+    <!-- 主要内容区域 -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <!-- 近7日统计卡片 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/bar_chart_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:text="近7日统计"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+                        <ImageView
+                            android:src="@drawable/ic_arrow_down"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp" />
+                    </LinearLayout>
+
+                    <!-- 图表容器 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/background"
+                        android:gravity="center">
+                        <!-- 这里将放置柱状图 -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/bar_chart" />
+                    </LinearLayout>
+
+                    <!-- 支出收入汇总 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="vertical">
+                            <TextView
+                                android:text="总支出:"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:textColor="@color/on_background_secondary" />
+                            <TextView
+                                android:text="¥360.62"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                android:textColor="@color/red" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="vertical">
+                            <TextView
+                                android:text="总收入:"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:textColor="@color/on_background_secondary" />
+                            <TextView
+                                android:text="¥0"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                android:textColor="@color/green" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="vertical">
+                            <TextView
+                                android:text="日均收入:"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:textColor="@color/on_background_secondary" />
+                            <TextView
+                                android:text="¥0"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                android:textColor="@color/green" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="vertical">
+                            <TextView
+                                android:text="日均支出:"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:textColor="@color/on_background_secondary" />
+                            <TextView
+                                android:text="¥0"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                                android:textColor="@color/green" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 资产汇总卡片 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pie_chart_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:text="资产汇总"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+                        <TextView
+                            android:text="总资产"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                            android:textColor="@color/on_background_secondary"
+                            android:layout_marginEnd="8dp" />
+                        <TextView
+                            android:text="¥3,502.65"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                            android:textColor="@color/primary" />
+                    </LinearLayout>
+
+                    <!-- 饼图容器 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/background"
+                        android:gravity="center">
+                        <!-- 这里将放置饼图 -->
+                        <View
+                            android:layout_width="180dp"
+                            android:layout_height="180dp"
+                            android:id="@+id/pie_chart" />
+                    </LinearLayout>
+
+                    <!-- 资产占比说明 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/primary"
+                                android:layout_marginEnd="8dp" />
+                            <TextView
+                                android:text="银行储蓄卡"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                                android:layout_weight="1" />
+                            <TextView
+                                android:text="¥1,338.77"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/secondary"
+                                android:layout_marginEnd="8dp" />
+                            <TextView
+                                android:text="信用卡"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                                android:layout_weight="1" />
+                            <TextView
+                                android:text="¥15,000.00"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/tertiary"
+                                android:layout_marginEnd="8dp" />
+                            <TextView
+                                android:text="微信钱包"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                                android:layout_weight="1" />
+                            <TextView
+                                android:text="¥326.90"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+                            <View
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:background="@color/quaternary"
+                                android:layout_marginEnd="8dp" />
+                            <TextView
+                                android:text="支付宝"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                                android:layout_weight="1" />
+                            <TextView
+                                android:text="¥36.98"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+                        </LinearLayout>
+
+                        <CheckBox
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="过滤占比小于1%的资产"
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 预算占比卡片 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/donut_chart_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="12dp"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:text="预算占比"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+                        <TextView
+                            android:text="查看详情"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                            android:textColor="@color/primary" />
+                    </LinearLayout>
+
+                    <!-- 环形图容器 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/background"
+                        android:gravity="center">
+                        <!-- 这里将放置环形图 -->
+                        <View
+                            android:layout_width="180dp"
+                            android:layout_height="180dp"
+                            android:id="@+id/donut_chart" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>
 
 

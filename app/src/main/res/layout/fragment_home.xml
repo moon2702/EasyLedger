@@ -97,24 +97,10 @@
             android:padding="16dp">
 
             <Button
-                android:id="@+id/btnQuickExpense"
-                android:layout_width="0dp"
+                android:id="@+id/btnAddNewBill"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/home_action_expense"
-                android:textColor="@color/primary"
-                android:backgroundTint="@android:color/transparent" />
-
-            <Space
-                android:layout_width="12dp"
-                android:layout_height="0dp" />
-
-            <Button
-                android:id="@+id/btnQuickIncome"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/home_action_income"
+                android:text="添加一条新记账"
                 android:textColor="@color/primary"
                 android:backgroundTint="@android:color/transparent" />
         </LinearLayout>
@@ -149,7 +135,8 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="@string/desc_quick_add"
-        app:srcCompat="@drawable/ic_launcher_foreground" />
+        app:srcCompat="@drawable/ic_launcher_foreground"
+        android:visibility="gone" />
 
 </FrameLayout>
 

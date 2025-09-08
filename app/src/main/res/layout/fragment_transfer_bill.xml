@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- <EditText
+        android:id="@+id/editTextTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="转账标题"
+        android:inputType="text"
+        android:layout_marginBottom="16dp" /> -->
+
+    <EditText
+        android:id="@+id/editTextFromAccount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="转出账户"
+        android:inputType="text"
+        android:layout_marginBottom="16dp"
+        android:background="@null" />
+
+    <EditText
+        android:id="@+id/editTextToAccount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="转入账户"
+        android:inputType="text"
+        android:layout_marginBottom="16dp"
+        android:background="@null" />
+
+    <EditText
+        android:id="@+id/editTextAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="金额"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="16dp"
+        android:background="@null" />
+
+    <EditText
+        android:id="@+id/editTextDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="日期"
+        android:inputType="date"
+        android:layout_marginBottom="16dp"
+        android:background="@null" />
+
+    <Button
+        android:id="@+id/btnSaveBill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="保存转账"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>

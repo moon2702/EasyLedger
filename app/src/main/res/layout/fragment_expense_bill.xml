@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/editTextTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="账单标题"
+        android:inputType="text"
+        android:layout_marginBottom="16dp"
+        android:background="@null" />
+
+    <EditText
+        android:id="@+id/editTextAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="0.00"
+        android:inputType="numberDecimal|numberSigned"
+        android:textSize="24sp"
+        android:background="@null"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="选择分类"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
+    <!-- <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="4dp"> -->
+        
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="4dp"
+        android:columnCount="4"
+        android:verticalSpacing="4dp"
+        android:horizontalSpacing="4dp">
+        <!-- android:rowCount="2" -->
+        <Button
+            android:id="@+id/btnCategoryAll"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="其他类型"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/btnCategoryShopping"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="购物消费"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/btnCategoryFood"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="食品餐饮"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/btnCategoryTransport"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="出行交通"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/btnCategoryEntertainment"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="休闲娱乐"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/btnCategoryHome"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="居家生活"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/btnCategoryEducation"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="文化教育"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+
+        <Button
+            android:id="@+id/btnCategoryHealth"
+            android:layout_width="80dp"
+            android:layout_height="55dp"
+            android:text="健康医疗"
+            android:textSize="12sp"
+            android:background="@drawable/category_button_bg"
+            android:layout_margin="4dp" />
+    </GridLayout>
+        <!-- </LinearLayout>
+    </HorizontalScrollView> -->
+
+    <TextView
+        android:id="@+id/tvSubCategoryTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="子分类"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <GridView
+        android:id="@+id/gridSubCategories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:numColumns="4"
+        android:verticalSpacing="8dp"
+        android:horizontalSpacing="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/editTextCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="已选择分类"
+        android:inputType="text"
+        android:focusable="false"
+        android:layout_marginBottom="16dp"
+        android:background="@null" />
+
+    <TextView
+        android:id="@+id/textViewAccount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="选择账户"
+        android:clickable="true"
+        android:focusable="true"
+        android:textSize="16sp"
+        android:textColor="@color/primary"
+        android:layout_marginBottom="16dp"
+        android:drawableEnd="@drawable/ic_arrow_drop_down"
+        android:padding="8dp" />
+
+    <EditText
+        android:id="@+id/editTextDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="日期"
+        android:inputType="date"
+        android:layout_marginBottom="16dp"
+        android:background="@null" />
+
+    <Button
+        android:id="@+id/btnSaveBill"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="保存账单"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>

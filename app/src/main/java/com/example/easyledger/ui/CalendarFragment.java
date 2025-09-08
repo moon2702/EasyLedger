@@ -81,11 +81,10 @@ public class CalendarFragment extends Fragment {
 
         // 设置日期选择监听
         calendarView.setOnDateChangeListener((view1, year, month, dayOfMonth) -> {
-            selectedDate = new Calendar.Builder()
-                    .set(Calendar.YEAR, year)
-                    .set(Calendar.MONTH, month)
-                    .set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                    .build();
+            selectedDate = Calendar.getInstance();
+            selectedDate.set(Calendar.YEAR, year);
+            selectedDate.set(Calendar.MONTH, month);
+            selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
             // 更新选中日期信息
             updateSelectedDateInfo();

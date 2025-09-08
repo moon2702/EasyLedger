@@ -1,26 +1,38 @@
 package com.example.easyledger;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import com.google.android.material.appbar.MaterialToolbar;
+import androidx.lifecycle.ViewModelProvider;
+
+
 import com.google.android.material.snackbar.Snackbar;
 import android.view.View;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.example.easyledger.database.Bill;
+import com.example.easyledger.database.BillType;
+import com.example.easyledger.database.BillViewModel;
 import com.example.easyledger.ui.HomeFragment;
 import com.example.easyledger.ui.CalendarFragment;
 import com.example.easyledger.ui.AssetsFragment;
 import com.example.easyledger.ui.StatsFragment;
 import com.example.easyledger.ui.SettingsFragment;
 
+import java.util.Calendar;
+
 public class MainActivity extends AppCompatActivity {
+
+    private BillViewModel billViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +45,11 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // 初始化ViewModel
+        billViewModel = new ViewModelProvider(this).get(BillViewModel.class);
+
+        // 初始化测试数据
+        initTestData();
 
         // FAB 迁移到 HomeFragment 中
 
@@ -79,6 +94,52 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             });
         }
+    }
+
+    /**
+     * 初始化测试数据
+     */
+    private void initTestData() {
+        // 使用Handler确保在UI线程执行
+        new Handler(Looper.getMainLooper()).post(() -> {
+            // 检查是否已有数据
+            billViewModel.getAllBills().observe(this, bills -> {
+                if (bills.isEmpty()) {
+                    // 创建一些测试数据
+                    Calendar calendar = Calendar.getInstance();
+
+                    // 今天的支出
+                    calendar.set(2025, Calendar.AUGUST, 20, 8, 12);
+                    billViewModel.insert(new Bill("早餐", "肯德基", calendar.getTime(), 12.5, BillType.EXPENSE, "餐饮", "现金", null));
+
+                    calendar.set(2025, Calendar.AUGUST, 20, 9, 5);
+                    billViewModel.insert(new Bill("打车", "滴滴出行", calendar.getTime(), 23.0, BillType.EXPENSE, "出行", "微信", null));
+
+                    // 工资收入
+                    calendar.set(2025, Calendar.AUGUST, 15, 10, 0);
+                    billViewModel.insert(new Bill("工资", "月薪", calendar.getTime(), 8500.0, BillType.INCOME, "收入", null, "工资卡"));
+
+                    // 其他测试数据
+                    calendar.set(2025, Calendar.AUGUST, 19, 14, 20);
+                    billViewModel.insert(new Bill("咖啡", "星巴克", calendar.getTime(), 18.0, BillType.EXPENSE, "餐饮", "信用卡", null));
+
+                    calendar.set(2025, Calendar.AUGUST, 18, 12, 30);
+                    billViewModel.insert(new Bill("退款", "淘宝购物", calendar.getTime(), 35.0, BillType.EXPENSE, "其他", "支付宝", null));
+
+                    calendar.set(2025, Calendar.AUGUST, 20, 19, 30);
+                    billViewModel.insert(new Bill("晚餐", "湘菜馆", calendar.getTime(), 89.0, BillType.EXPENSE, "餐饮", "信用卡", null));
+
+                    calendar.set(2025, Calendar.AUGUST, 19, 21, 15);
+                    billViewModel.insert(new Bill("电影票", "复仇者联盟", calendar.getTime(), 55.0, BillType.EXPENSE, "娱乐", "支付宝", null));
+
+                    calendar.set(2025, Calendar.AUGUST, 1, 11, 0);
+                    billViewModel.insert(new Bill("房租", "8月房租", calendar.getTime(), 2500.0, BillType.EXPENSE, "生活", "银行记账", null));
+
+                }
+                // 只观察一次
+                billViewModel.getAllBills().removeObservers(this);
+            });
+        });
     }
 
     private void showOnly(String tagToShow) {

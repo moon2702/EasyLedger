@@ -71,54 +71,9 @@
                     android:weekDayTextAppearance="@style/CalendarWeekDayText" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 支出/收入指示器 -->
-            <LinearLayout
-                android:id="@+id/expense_indicator"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:padding="16dp"
-                android:layout_marginTop="16dp">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:layout_marginEnd="16dp">
-                    <View
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:background="@color/red"
-                        android:layout_marginEnd="4dp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/expense"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <View
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:background="@color/green"
-                        android:layout_marginEnd="4dp" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/income"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- 选中日期信息卡片 -->
+            <!-- 本日收支汇总卡片 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/summaryCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -126,15 +81,39 @@
                 android:layout_marginTop="16dp"
                 app:shapeAppearance="@style/ShapeAppearance.EasyLedger.Medium">
 
-                <TextView
-                    android:id="@+id/tv_selected_date_info"
+                <LinearLayout
+                    android:id="@+id/summaryContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/select_a_date"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                    android:padding="16dp" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/summaryTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="本日收支"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
+
+                    <TextView
+                        android:id="@+id/summaryValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="+0.00"
+                        android:textAppearance="@style/TextAppearance.Material3.DisplaySmall" />
+
+                    <TextView
+                        android:id="@+id/summaryDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="收入 0.00 · 支出 0.00"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:textColor="@android:color/darker_gray" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
 
             <!-- 选中日期的账单列表 -->
             <LinearLayout

@@ -33,7 +33,6 @@ public class CalendarFragment extends Fragment {
 
     private CalendarView calendarView;
     private TextView tvCurrentMonth;
-    private TextView tvSelectedDateInfo;
     private Button btnPrevMonth;
     private Button btnNextMonth;
     private SimpleDateFormat monthFormat;
@@ -42,6 +41,10 @@ public class CalendarFragment extends Fragment {
     private int currentYear;
     private int currentMonth;
     private BillViewModel billViewModel;
+    
+    // 收支汇总卡片相关
+    private TextView summaryValue;
+    private TextView summaryDesc;
     
     // 账单列表相关
     private RecyclerView recyclerDateBills;
@@ -61,7 +64,10 @@ public class CalendarFragment extends Fragment {
         btnPrevMonth = view.findViewById(R.id.btn_prev_month);
         btnNextMonth = view.findViewById(R.id.btn_next_month);
         calendarView = view.findViewById(R.id.calendar_view);
-        tvSelectedDateInfo = view.findViewById(R.id.tv_selected_date_info);
+        
+        // 初始化收支汇总卡片控件
+        summaryValue = view.findViewById(R.id.summaryValue);
+        summaryDesc = view.findViewById(R.id.summaryDesc);
         
         // 初始化账单列表相关控件
         recyclerDateBills = view.findViewById(R.id.recycler_date_bills);
@@ -193,39 +199,18 @@ public class CalendarFragment extends Fragment {
                     // 在UI线程更新显示
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
-                            StringBuilder info = new StringBuilder();
-                            info.append(dateStr).append("\n");
-                            
-                            if (expense > 0) {
-                                info.append("支出: ¥").append(String.format("%.2f", expense)).append("\n");
-                            }
-                            if (income > 0) {
-                                info.append("收入: ¥").append(String.format("%.2f", income)).append("\n");
-                            }
-                            if (transfer > 0) {
-                                info.append("转账: ¥").append(String.format("%.2f", transfer)).append("\n");
-                            }
-                            if (repayment > 0) {
-                                info.append("还款: ¥").append(String.format("%.2f", repayment)).append("\n");
-                            }
-                            
-                            if (bills != null && !bills.isEmpty()) {
-                                info.append("账单数量: ").append(bills.size()).append("笔");
-                            } else {
-                                info.append("暂无账单记录");
-                            }
-                            
-                            tvSelectedDateInfo.setText(info.toString());
+                            // 更新收支汇总卡片
+                            updateSummaryCard(income, expense);
                             
                             // 更新账单列表
                             updateBillsList(bills);
                         });
                     }
                 } catch (Exception e) {
-                    // 如果查询失败，显示默认信息
+                    // 如果查询失败，显示Toast提示
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
-                            tvSelectedDateInfo.setText(dateStr + "\n数据加载失败");
+                            Toast.makeText(getContext(), "数据加载失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         });
                     }
                 }
@@ -349,6 +334,22 @@ public class CalendarFragment extends Fragment {
             recentBills.add(new RecentBill(bill.getId(), bill.getTitle(), subtitle, dateText, amountText, isRepaymentOrTransfer, isExpense));
         }
         return recentBills;
+    }
+
+    /**
+     * 更新收支汇总卡片
+     */
+    private void updateSummaryCard(double income, double expense) {
+        if (summaryValue == null || summaryDesc == null) {
+            return;
+        }
+
+        // 计算净收支
+        double total = income - expense;
+
+        // 更新UI
+        summaryValue.setText(String.format("%s%.2f", total >= 0 ? "+" : "", total));
+        summaryDesc.setText(String.format("收入 %.2f · 支出 %.2f", income, expense));
     }
 }
 

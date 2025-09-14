@@ -11,11 +11,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import com.example.easyledger.R;
+import com.example.easyledger.database.Bill;
+import com.example.easyledger.database.BillViewModel;
+import com.example.easyledger.database.BillType;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class CalendarFragment extends Fragment {
@@ -30,6 +35,7 @@ public class CalendarFragment extends Fragment {
     private Calendar selectedDate;
     private int currentYear;
     private int currentMonth;
+    private BillViewModel billViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -43,6 +49,9 @@ public class CalendarFragment extends Fragment {
         btnNextMonth = view.findViewById(R.id.btn_next_month);
         calendarView = view.findViewById(R.id.calendar_view);
         tvSelectedDateInfo = view.findViewById(R.id.tv_selected_date_info);
+
+        // 初始化ViewModel
+        billViewModel = new ViewModelProvider(requireActivity()).get(BillViewModel.class);
 
         // 初始化日期变量
         selectedDate = Calendar.getInstance();
@@ -119,13 +128,58 @@ public class CalendarFragment extends Fragment {
     private void updateSelectedDateInfo() {
         if (selectedDate != null) {
             String dateStr = dateFormat.format(selectedDate.getTime());
-            // 模拟加载数据
-            double expense = Math.random() * 1000;
-            double income = Math.random() * 5000;
-
-            // 更新显示
-            String info = dateStr + "\n支出: ¥" + String.format("%.2f", expense) + "\n收入: ¥" + String.format("%.2f", income);
-            tvSelectedDateInfo.setText(info);
+            
+            // 在后台线程查询数据
+            new Thread(() -> {
+                try {
+                    long dateInMillis = selectedDate.getTimeInMillis();
+                    
+                    // 查询该日期的各项数据
+                    double expense = billViewModel.getExpenseByDate(dateInMillis);
+                    double income = billViewModel.getIncomeByDate(dateInMillis);
+                    double transfer = billViewModel.getTransferByDate(dateInMillis);
+                    double repayment = billViewModel.getRepaymentByDate(dateInMillis);
+                    
+                    // 获取该日期的所有账单
+                    List<Bill> bills = billViewModel.getBillsByDate(dateInMillis);
+                    
+                    // 在UI线程更新显示
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            StringBuilder info = new StringBuilder();
+                            info.append(dateStr).append("\n");
+                            
+                            if (expense > 0) {
+                                info.append("支出: ¥").append(String.format("%.2f", expense)).append("\n");
+                            }
+                            if (income > 0) {
+                                info.append("收入: ¥").append(String.format("%.2f", income)).append("\n");
+                            }
+                            if (transfer > 0) {
+                                info.append("转账: ¥").append(String.format("%.2f", transfer)).append("\n");
+                            }
+                            if (repayment > 0) {
+                                info.append("还款: ¥").append(String.format("%.2f", repayment)).append("\n");
+                            }
+                            
+                            if (bills != null && !bills.isEmpty()) {
+                                info.append("账单数量: ").append(bills.size()).append("笔");
+                            } else {
+                                info.append("暂无账单记录");
+                            }
+                            
+                            tvSelectedDateInfo.setText(info.toString());
+                        });
+                    }
+                } catch (Exception e) {
+                    // 如果查询失败，显示默认信息
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            tvSelectedDateInfo.setText(dateStr + "\n数据加载失败");
+                        });
+                    }
+                }
+            }).start();
         }
     }
 
@@ -133,9 +187,66 @@ public class CalendarFragment extends Fragment {
     private void loadDataForSelectedDate() {
         if (selectedDate != null) {
             String dateStr = dateFormat.format(selectedDate.getTime());
-            updateSelectedDateInfo();
-            // 显示简短提示
-            // Toast.makeText(getContext(), "已加载 " + dateStr + " 的数据", Toast.LENGTH_SHORT).show();
+            
+            // 在后台线程加载详细数据
+            new Thread(() -> {
+                try {
+                    long dateInMillis = selectedDate.getTimeInMillis();
+                    
+                    // 获取该日期的所有账单
+                    List<Bill> bills = billViewModel.getBillsByDate(dateInMillis);
+                    
+                    // 在UI线程显示提示信息
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            if (bills != null && !bills.isEmpty()) {
+                                // 统计各类型账单数量
+                                int expenseCount = 0, incomeCount = 0, transferCount = 0, repaymentCount = 0;
+                                for (Bill bill : bills) {
+                                    switch (bill.getType()) {
+                                        case EXPENSE:
+                                            expenseCount++;
+                                            break;
+                                        case INCOME:
+                                            incomeCount++;
+                                            break;
+                                        case TRANSFER:
+                                            transferCount++;
+                                            break;
+                                        case REPAYMENT:
+                                            repaymentCount++;
+                                            break;
+                                    }
+                                }
+                                
+                                StringBuilder message = new StringBuilder();
+                                message.append("已加载 ").append(dateStr).append(" 的数据\n");
+                                message.append("共 ").append(bills.size()).append(" 笔账单");
+                                
+                                if (expenseCount > 0) message.append("，支出 ").append(expenseCount).append(" 笔");
+                                if (incomeCount > 0) message.append("，收入 ").append(incomeCount).append(" 笔");
+                                if (transferCount > 0) message.append("，转账 ").append(transferCount).append(" 笔");
+                                if (repaymentCount > 0) message.append("，还款 ").append(repaymentCount).append(" 笔");
+                                
+                                Toast.makeText(getContext(), message.toString(), Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getContext(), dateStr + " 暂无账单记录", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                    
+                    // 更新选中日期信息显示
+                    updateSelectedDateInfo();
+                    
+                } catch (Exception e) {
+                    // 如果加载失败，显示错误信息
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            Toast.makeText(getContext(), "数据加载失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                }
+            }).start();
         }
     }
 }

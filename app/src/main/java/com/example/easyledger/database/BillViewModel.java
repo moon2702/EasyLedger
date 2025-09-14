@@ -81,4 +81,34 @@ public class BillViewModel extends AndroidViewModel {
     public LiveData<Double> getTotalIncome() {
         return repository.getTotalIncome();
     }
+
+    // 查询指定日期的账单
+    public List<Bill> getBillsByDate(long date) {
+        return repository.getBillsByDate(date);
+    }
+
+    // 查询指定日期的账单（返回LiveData）
+    public LiveData<List<Bill>> getBillsByDateLiveData(long date) {
+        return repository.getBillsByDateLiveData(date);
+    }
+
+    // 查询指定日期的支出总额
+    public double getExpenseByDate(long date) {
+        return repository.getExpenseByDate(date);
+    }
+
+    // 查询指定日期的收入总额
+    public double getIncomeByDate(long date) {
+        return repository.getIncomeByDate(date);
+    }
+
+    // 查询指定日期的转账总额
+    public double getTransferByDate(long date) {
+        return repository.getTransferByDate(date);
+    }
+
+    // 查询指定日期的还款总额
+    public double getRepaymentByDate(long date) {
+        return repository.getRepaymentByDate(date);
+    }
 }

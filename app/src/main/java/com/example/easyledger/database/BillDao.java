@@ -125,4 +125,28 @@ public interface BillDao {
     // 查询总还款金额（返回LiveData）
     @Query("SELECT SUM(amount) FROM bill WHERE type = 'REPAYMENT'")
     LiveData<Double> getTotalRepaymentLiveData();
+
+    // 查询指定日期的账单
+    @Query("SELECT * FROM bill WHERE date(date/1000, 'unixepoch') = date(:date/1000, 'unixepoch') ORDER BY date DESC")
+    List<Bill> getBillsByDate(long date);
+
+    // 查询指定日期的账单（返回LiveData）
+    @Query("SELECT * FROM bill WHERE date(date/1000, 'unixepoch') = date(:date/1000, 'unixepoch') ORDER BY date DESC")
+    LiveData<List<Bill>> getBillsByDateLiveData(long date);
+
+    // 查询指定日期的支出总额
+    @Query("SELECT SUM(amount) FROM bill WHERE type = 'EXPENSE' AND date(date/1000, 'unixepoch') = date(:date/1000, 'unixepoch')")
+    double getExpenseByDate(long date);
+
+    // 查询指定日期的收入总额
+    @Query("SELECT SUM(amount) FROM bill WHERE type = 'INCOME' AND date(date/1000, 'unixepoch') = date(:date/1000, 'unixepoch')")
+    double getIncomeByDate(long date);
+
+    // 查询指定日期的转账总额
+    @Query("SELECT SUM(amount) FROM bill WHERE type = 'TRANSFER' AND date(date/1000, 'unixepoch') = date(:date/1000, 'unixepoch')")
+    double getTransferByDate(long date);
+
+    // 查询指定日期的还款总额
+    @Query("SELECT SUM(amount) FROM bill WHERE type = 'REPAYMENT' AND date(date/1000, 'unixepoch') = date(:date/1000, 'unixepoch')")
+    double getRepaymentByDate(long date);
 }

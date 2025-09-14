@@ -89,4 +89,34 @@ public class BillRepository {
     public LiveData<Double> getTotalIncome() {
         return billDao.getTotalIncomeLiveData();
     }
+
+    // 查询指定日期的账单
+    public List<Bill> getBillsByDate(long date) {
+        return billDao.getBillsByDate(date);
+    }
+
+    // 查询指定日期的账单（返回LiveData）
+    public LiveData<List<Bill>> getBillsByDateLiveData(long date) {
+        return billDao.getBillsByDateLiveData(date);
+    }
+
+    // 查询指定日期的支出总额
+    public double getExpenseByDate(long date) {
+        return billDao.getExpenseByDate(date);
+    }
+
+    // 查询指定日期的收入总额
+    public double getIncomeByDate(long date) {
+        return billDao.getIncomeByDate(date);
+    }
+
+    // 查询指定日期的转账总额
+    public double getTransferByDate(long date) {
+        return billDao.getTransferByDate(date);
+    }
+
+    // 查询指定日期的还款总额
+    public double getRepaymentByDate(long date) {
+        return billDao.getRepaymentByDate(date);
+    }
 }

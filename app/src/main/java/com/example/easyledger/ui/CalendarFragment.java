@@ -32,14 +32,8 @@ import java.util.Locale;
 public class CalendarFragment extends Fragment {
 
     private CalendarView calendarView;
-    private TextView tvCurrentMonth;
-    private Button btnPrevMonth;
-    private Button btnNextMonth;
-    private SimpleDateFormat monthFormat;
     private SimpleDateFormat dateFormat;
     private Calendar selectedDate;
-    private int currentYear;
-    private int currentMonth;
     private BillViewModel billViewModel;
     
     // 收支汇总卡片相关
@@ -60,9 +54,6 @@ public class CalendarFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_calendar, container, false);
 
         // 初始化控件
-        tvCurrentMonth = view.findViewById(R.id.tv_current_month);
-        btnPrevMonth = view.findViewById(R.id.btn_prev_month);
-        btnNextMonth = view.findViewById(R.id.btn_next_month);
         calendarView = view.findViewById(R.id.calendar_view);
         
         // 初始化收支汇总卡片控件
@@ -82,38 +73,13 @@ public class CalendarFragment extends Fragment {
 
         // 初始化日期变量
         selectedDate = Calendar.getInstance();
-        Calendar currentCalendar = Calendar.getInstance();
-        currentYear = currentCalendar.get(Calendar.YEAR);
-        currentMonth = currentCalendar.get(Calendar.MONTH);
 
         // 初始化日期格式
-        monthFormat = new SimpleDateFormat("yyyy年MM月", Locale.CHINA);
         dateFormat = new SimpleDateFormat("yyyy年MM月dd日", Locale.CHINA);
 
-        // 设置当前月份标题
-        updateMonthTitle();
+        // 设置当前日期信息
         updateSelectedDateInfo();
 
-        // 设置月份切换按钮点击事件
-        btnPrevMonth.setOnClickListener(v -> {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            updateMonthTitle();
-            updateCalendarView();
-        });
-
-        btnNextMonth.setOnClickListener(v -> {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            updateMonthTitle();
-            updateCalendarView();
-        });
 
         // 设置日期选择监听
         calendarView.setOnDateChangeListener((view1, year, month, dayOfMonth) -> {
@@ -157,24 +123,7 @@ public class CalendarFragment extends Fragment {
         recyclerDateBills.setAdapter(billsAdapter);
     }
 
-    // 更新月份标题
-    private void updateMonthTitle() {
-        Calendar tempCalendar = Calendar.getInstance();
-        tempCalendar.set(Calendar.YEAR, currentYear);
-        tempCalendar.set(Calendar.MONTH, currentMonth);
-        String currentMonth = monthFormat.format(tempCalendar.getTime());
-        tvCurrentMonth.setText(currentMonth);
-    }
 
-    // 更新日历视图
-    private void updateCalendarView() {
-        Calendar tempCalendar = Calendar.getInstance();
-        tempCalendar.set(Calendar.YEAR, currentYear);
-        tempCalendar.set(Calendar.MONTH, currentMonth);
-        // 设置日历显示的月份
-        long timeInMillis = tempCalendar.getTimeInMillis();
-        calendarView.setDate(timeInMillis, false, true);
-    }
 
     // 更新选中日期信息
     private void updateSelectedDateInfo() {

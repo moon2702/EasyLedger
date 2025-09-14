@@ -1,5 +1,6 @@
 package com.example.easyledger.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +13,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.example.easyledger.R;
 import com.example.easyledger.database.Bill;
 import com.example.easyledger.database.BillViewModel;
 import com.example.easyledger.database.BillType;
+import com.example.easyledger.ui.adapter.RecentBillsAdapter;
+import com.example.easyledger.ui.model.RecentBill;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +42,13 @@ public class CalendarFragment extends Fragment {
     private int currentYear;
     private int currentMonth;
     private BillViewModel billViewModel;
+    
+    // 账单列表相关
+    private RecyclerView recyclerDateBills;
+    private TextView tvBillsListTitle;
+    private TextView tvNoBills;
+    private RecentBillsAdapter billsAdapter;
+    private List<Bill> currentDateBills;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,9 +62,17 @@ public class CalendarFragment extends Fragment {
         btnNextMonth = view.findViewById(R.id.btn_next_month);
         calendarView = view.findViewById(R.id.calendar_view);
         tvSelectedDateInfo = view.findViewById(R.id.tv_selected_date_info);
+        
+        // 初始化账单列表相关控件
+        recyclerDateBills = view.findViewById(R.id.recycler_date_bills);
+        tvBillsListTitle = view.findViewById(R.id.tv_bills_list_title);
+        tvNoBills = view.findViewById(R.id.tv_no_bills);
 
         // 初始化ViewModel
         billViewModel = new ViewModelProvider(requireActivity()).get(BillViewModel.class);
+        
+        // 初始化账单列表
+        initBillsList();
 
         // 初始化日期变量
         selectedDate = Calendar.getInstance();
@@ -105,6 +126,31 @@ public class CalendarFragment extends Fragment {
         return view;
     }
 
+    // 初始化账单列表
+    private void initBillsList() {
+        // 初始化适配器
+        billsAdapter = new RecentBillsAdapter(new ArrayList<>());
+        
+        // 设置列表项点击事件监听器
+        billsAdapter.setOnItemClickListener(bill -> {
+            // 查找对应的Bill对象并启动编辑界面
+            if (currentDateBills != null && !currentDateBills.isEmpty()) {
+                for (Bill b : currentDateBills) {
+                    if (b.getId() == bill.id) {
+                        Intent intent = new Intent(getActivity(), com.example.easyledger.BillAddActivity.class);
+                        intent.putExtra(com.example.easyledger.BillAddActivity.EXTRA_BILL_ID, b.getId());
+                        startActivity(intent);
+                        break;
+                    }
+                }
+            }
+        });
+        
+        // 设置RecyclerView
+        recyclerDateBills.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerDateBills.setAdapter(billsAdapter);
+    }
+
     // 更新月份标题
     private void updateMonthTitle() {
         Calendar tempCalendar = Calendar.getInstance();
@@ -142,6 +188,7 @@ public class CalendarFragment extends Fragment {
                     
                     // 获取该日期的所有账单
                     List<Bill> bills = billViewModel.getBillsByDate(dateInMillis);
+                    currentDateBills = bills; // 保存当前日期的账单
                     
                     // 在UI线程更新显示
                     if (getActivity() != null) {
@@ -169,6 +216,9 @@ public class CalendarFragment extends Fragment {
                             }
                             
                             tvSelectedDateInfo.setText(info.toString());
+                            
+                            // 更新账单列表
+                            updateBillsList(bills);
                         });
                     }
                 } catch (Exception e) {
@@ -248,6 +298,57 @@ public class CalendarFragment extends Fragment {
                 }
             }).start();
         }
+    }
+
+    // 更新账单列表显示
+    private void updateBillsList(List<Bill> bills) {
+        if (bills == null || bills.isEmpty()) {
+            // 没有账单时隐藏列表，显示提示
+            tvBillsListTitle.setVisibility(View.GONE);
+            recyclerDateBills.setVisibility(View.GONE);
+            tvNoBills.setVisibility(View.VISIBLE);
+        } else {
+            // 有账单时显示列表，隐藏提示
+            tvBillsListTitle.setVisibility(View.VISIBLE);
+            recyclerDateBills.setVisibility(View.VISIBLE);
+            tvNoBills.setVisibility(View.GONE);
+            
+            // 转换数据并更新适配器
+            List<RecentBill> recentBills = convertToRecentBills(bills);
+            billsAdapter.updateData(recentBills);
+        }
+    }
+
+    /**
+     * 将Bill对象列表转换为RecentBill对象列表
+     */
+    private List<RecentBill> convertToRecentBills(List<Bill> bills) {
+        List<RecentBill> recentBills = new ArrayList<>();
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.CHINA);
+        
+        for (Bill bill : bills) {
+            boolean isRepaymentOrTransfer = bill.getType() == BillType.REPAYMENT || bill.getType() == BillType.TRANSFER;
+            boolean isExpense = bill.getType() == BillType.EXPENSE;
+
+            String dateText = timeFormat.format(bill.getDate()); // 只显示时间
+            String amountText = "";
+            String subtitle = "";
+
+            if (isRepaymentOrTransfer) {
+                amountText = String.valueOf(bill.getAmount());
+                subtitle = bill.getCategory() + " · " + bill.getAccount() + " -> " + bill.getTargetAccount();
+            } else {
+                if (isExpense) {
+                    amountText = "-" + String.valueOf(bill.getAmount());
+                } else {
+                    amountText = "+" + String.valueOf(bill.getAmount());
+                }
+                subtitle = bill.getCategory() + " · " + bill.getAccount();
+            }
+
+            recentBills.add(new RecentBill(bill.getId(), bill.getTitle(), subtitle, dateText, amountText, isRepaymentOrTransfer, isExpense));
+        }
+        return recentBills;
     }
 }
 

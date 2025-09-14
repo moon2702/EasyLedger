@@ -20,6 +20,7 @@ import com.example.easyledger.database.Account;
 import com.example.easyledger.database.AccountViewModel;
 import com.example.easyledger.ui.AccountSelectorView;
 import com.example.easyledger.ui.AccountSelectorListener;
+import com.example.easyledger.ui.AccountBalanceManager;
 
 public class TransferBillFragment extends Fragment implements BillSaveable, AccountSelectorListener {
 
@@ -29,6 +30,7 @@ public class TransferBillFragment extends Fragment implements BillSaveable, Acco
     private AccountSelectorView editTextToAccount;
     private EditText editTextDate;
     private BillViewModel billViewModel;
+    private AccountBalanceManager balanceManager;
 
     @Nullable
     @Override
@@ -44,6 +46,9 @@ public class TransferBillFragment extends Fragment implements BillSaveable, Acco
                 android.util.Log.e("TransferBillFragment", "Activity is null, cannot initialize ViewModel");
                 return root;
             }
+
+            // 初始化余额管理器
+            balanceManager = new AccountBalanceManager(requireContext());
 
             // 获取视图控件
             editTextAmount = root.findViewById(R.id.editTextAmount);
@@ -94,6 +99,21 @@ public class TransferBillFragment extends Fragment implements BillSaveable, Acco
         return root;
     }
 
+    private boolean updateAccountBalance(Account fromAccount, Account toAccount, double amount) {
+        if (balanceManager == null) {
+            Toast.makeText(getContext(), "余额管理器未初始化", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        AccountBalanceManager.BalanceUpdateResult result = balanceManager.handleTransferBill(fromAccount, toAccount, amount);
+        
+        if (!result.isSuccess()) {
+            Toast.makeText(getContext(), result.getMessage(), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        
+        return true;
+    }
+
     @Override
     public boolean saveBill() {
         try {
@@ -126,6 +146,11 @@ public class TransferBillFragment extends Fragment implements BillSaveable, Acco
 
             // 创建转账Bill对象
             Bill bill = new Bill(title, "", date, amount, BillType.TRANSFER, "转账", fromAccount.getName(), toAccount.getName());
+
+            // 先更新账户余额
+            if (!updateAccountBalance(fromAccount, toAccount, amount)) {
+                return false; // 余额更新失败，不保存账单
+            }
 
             // 保存账单
             billViewModel.insert(bill);

@@ -23,6 +23,7 @@ import com.example.easyledger.database.Account;
 import com.example.easyledger.database.AccountViewModel;
 import com.example.easyledger.ui.AccountSelectorView;
 import com.example.easyledger.ui.AccountSelectorListener;
+import com.example.easyledger.ui.AccountBalanceManager;
 
 public class IncomeBillFragment extends Fragment implements BillSaveable, AccountSelectorListener {
 
@@ -35,6 +36,7 @@ public class IncomeBillFragment extends Fragment implements BillSaveable, Accoun
     private ArrayAdapter<String> subCategoryAdapter;
     private BillViewModel billViewModel;
     private String selectedSubCategory = "";
+    private AccountBalanceManager balanceManager;
 
     @Nullable
     @Override
@@ -50,6 +52,9 @@ public class IncomeBillFragment extends Fragment implements BillSaveable, Accoun
                 android.util.Log.e("IncomeBillFragment", "Activity is null, cannot initialize ViewModel");
                 return root;
             }
+
+            // 初始化余额管理器
+            balanceManager = new AccountBalanceManager(requireContext());
 
             // 获取视图控件
             editTextTitle = root.findViewById(R.id.editTextTitle);
@@ -135,6 +140,22 @@ public class IncomeBillFragment extends Fragment implements BillSaveable, Accoun
         return root;
     }
 
+    private boolean updateAccountBalance(Account account, double amount) {
+        if (balanceManager == null) {
+            Toast.makeText(getContext(), "余额管理器未初始化", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        AccountBalanceManager.BalanceUpdateResult result = balanceManager.handleIncomeBill(account, amount);
+        
+        if (!result.isSuccess()) {
+            Toast.makeText(getContext(), result.getMessage(), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        
+        return true;
+    }
+
     @Override
     public boolean saveBill() {
         try {
@@ -164,6 +185,11 @@ public class IncomeBillFragment extends Fragment implements BillSaveable, Accoun
 
             // 创建Bill对象
             Bill bill = new Bill(title, "", date, amount, BillType.INCOME, subCategory, selectedAccount.getName());
+
+            // 先更新账户余额
+            if (!updateAccountBalance(selectedAccount, amount)) {
+                return false; // 余额更新失败，不保存账单
+            }
 
             // 保存账单
             billViewModel.insert(bill);

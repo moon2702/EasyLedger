@@ -17,6 +17,7 @@ import com.example.easyledger.database.Account;
 import com.example.easyledger.database.AccountViewModel;
 import com.example.easyledger.ui.AccountSelectorView;
 import com.example.easyledger.ui.AccountSelectorListener;
+import com.example.easyledger.ui.AccountBalanceManager;
 import androidx.lifecycle.ViewModelProvider;
 import java.util.*;
 import android.widget.AdapterView.OnItemClickListener;
@@ -45,6 +46,7 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable, Accou
     private GridView gridSubCategories;
     private Button btnSaveBill;
     private BillViewModel billViewModel;
+    private AccountBalanceManager balanceManager;
 
     // 类别和子类别数据
     private Map<String, List<String>> categoryMap;
@@ -59,6 +61,9 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable, Accou
 
         // 初始化ViewModel
         billViewModel = new ViewModelProvider(requireActivity()).get(BillViewModel.class);
+        
+        // 初始化余额管理器
+        balanceManager = new AccountBalanceManager(requireContext());
 
         // 初始化类别数据
         initCategoryData();
@@ -134,20 +139,21 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable, Accou
         return root;
     }
 
-    // 更新账户余额
-    private void updateAccountBalance(Account account, double amount) {
-        if (account == null) {
-            return;
+    // 更新账户余额 - 使用新的余额管理器
+    private boolean updateAccountBalance(Account account, double amount) {
+        if (balanceManager == null) {
+            Toast.makeText(getContext(), "余额管理器未初始化", Toast.LENGTH_SHORT).show();
+            return false;
         }
         
-        // 获取AccountViewModel实例
-        AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
-
-        // 支出账单，减少账户余额
-        double newBalance = account.getBalance() - amount;
-        account.setBalance(newBalance);
-        // 更新账户
-        accountViewModel.update(account);
+        AccountBalanceManager.BalanceUpdateResult result = balanceManager.handleExpenseBill(account, amount);
+        
+        if (!result.isSuccess()) {
+            Toast.makeText(getContext(), result.getMessage(), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        
+        return true;
     }
 
     // 初始化类别数据
@@ -350,11 +356,13 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable, Accou
             // 创建Bill对象
             Bill bill = new Bill(title, "", date, amount, BillType.EXPENSE, finalCategory, selectedAccount.getName());
 
-            // 保存账单
-            billViewModel.insert(bill);
+            // 先更新账户余额
+            if (!updateAccountBalance(selectedAccount, amount)) {
+                return false; // 余额更新失败，不保存账单
+            }
 
-            // 更新账户余额
-            updateAccountBalance(selectedAccount, amount);
+            // 再保存账单
+            billViewModel.insert(bill);
 
             Toast.makeText(getContext(), "保存成功", Toast.LENGTH_SHORT).show();
             return true;

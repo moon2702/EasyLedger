@@ -22,6 +22,7 @@ import com.example.easyledger.ui.billadd.ExpenseBillFragment;
 import com.example.easyledger.ui.billadd.IncomeBillFragment;
 import com.example.easyledger.ui.billadd.TransferBillFragment;
 import com.example.easyledger.ui.billadd.RepaymentBillFragment;
+import com.example.easyledger.ui.AccountBalanceManager;
 
 import android.util.Log;
 import java.util.List;
@@ -37,6 +38,7 @@ public class BillAddActivity extends AppCompatActivity {
     private BillViewModel billViewModel;
     private int billId = -1; // -1 表示新增模式
     private Bill currentBill;
+    private AccountBalanceManager balanceManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,9 @@ public class BillAddActivity extends AppCompatActivity {
 
         // 初始化ViewModel
         billViewModel = new ViewModelProvider(this).get(BillViewModel.class);
+        
+        // 初始化余额管理器
+        balanceManager = new AccountBalanceManager(this);
 
         // 检查是否有账单ID传入
         if (getIntent().hasExtra(EXTRA_BILL_ID)) {
@@ -151,32 +156,79 @@ public class BillAddActivity extends AppCompatActivity {
     private void deleteCurrentBill() {
         if (currentBill != null) {
             new Thread(() -> {
-                // 先保存要恢复的账户信息
-                String accountName = currentBill.getAccount();
-                double amount = currentBill.getAmount();
-                
-                // 删除账单
-                billViewModel.delete(currentBill);
-                
-                // 删除成功后恢复账户余额
-                AccountViewModel accountViewModel = new ViewModelProvider(BillAddActivity.this).get(AccountViewModel.class);
-                List<Account> allAccounts = accountViewModel.getAllAccounts().getValue();
-                if (allAccounts != null) {
-                    for (Account account : allAccounts) {
-                        if (account.getName().equals(accountName)) {
-                            // 恢复余额（增加回金额）
-                            double newBalance = account.getBalance() + amount;
-                            account.setBalance(newBalance);
-                            accountViewModel.update(account);
+                try {
+                    // 先恢复账户余额
+                    AccountBalanceManager.BalanceUpdateResult result = null;
+                    
+                    switch (currentBill.getType()) {
+                        case EXPENSE:
+                            // 删除支出账单：恢复账户余额（增加金额）
+                            result = balanceManager.restoreExpenseAccountBalance(currentBill.getAccount(), currentBill.getAmount());
                             break;
-                        }
+                            
+                        case INCOME:
+                            // 删除收入账单：减少账户余额
+                            result = balanceManager.reduceIncomeAccountBalance(currentBill.getAccount(), currentBill.getAmount());
+                            break;
+                            
+                        case TRANSFER:
+                            // 删除转账账单：恢复转出账户余额，减少转入账户余额
+                            if (currentBill.getTargetAccount() != null) {
+                                result = balanceManager.restoreTransferAccountBalance(
+                                    currentBill.getAccount(), 
+                                    currentBill.getTargetAccount(), 
+                                    currentBill.getAmount()
+                                );
+                            } else {
+                                result = new AccountBalanceManager.BalanceUpdateResult(false, "转账账单缺少目标账户信息", null);
+                            }
+                            break;
+                            
+                        case REPAYMENT:
+                            // 删除还款账单：恢复支出账户余额，减少信贷账户余额
+                            if (currentBill.getTargetAccount() != null) {
+                                result = balanceManager.restoreRepaymentAccountBalance(
+                                    currentBill.getAccount(), 
+                                    currentBill.getTargetAccount(), 
+                                    currentBill.getAmount()
+                                );
+                            } else {
+                                result = new AccountBalanceManager.BalanceUpdateResult(false, "还款账单缺少目标账户信息", null);
+                            }
+                            break;
+                            
+                        default:
+                            result = new AccountBalanceManager.BalanceUpdateResult(false, "未知的账单类型", null);
+                            break;
                     }
+                    
+                    // 将result赋值给final变量，以便在lambda中使用
+                    final AccountBalanceManager.BalanceUpdateResult finalResult = result;
+                    final boolean isSuccess = finalResult != null && finalResult.isSuccess();
+                    final String errorMessage = finalResult != null ? finalResult.getMessage() : "删除失败";
+                    
+                    if (isSuccess) {
+                        // 余额恢复成功，删除账单
+                        billViewModel.delete(currentBill);
+                        
+                        runOnUiThread(() -> {
+                            Snackbar.make(findViewById(android.R.id.content), "账单已删除", Snackbar.LENGTH_SHORT).show();
+                            finish();
+                        });
+                    } else {
+                        // 余额恢复失败
+                        runOnUiThread(() -> {
+                            Snackbar.make(findViewById(android.R.id.content), "删除失败：" + errorMessage, Snackbar.LENGTH_SHORT).show();
+                        });
+                    }
+                    
+                } catch (Exception e) {
+                    Log.e(TAG, "删除账单时发生错误", e);
+                    final String exceptionMessage = e.getMessage();
+                    runOnUiThread(() -> {
+                        Snackbar.make(findViewById(android.R.id.content), "删除失败：" + exceptionMessage, Snackbar.LENGTH_SHORT).show();
+                    });
                 }
-                
-                runOnUiThread(() -> {
-                    Snackbar.make(findViewById(android.R.id.content), "账单已删除", Snackbar.LENGTH_SHORT).show();
-                    finish();
-                });
             }).start();
         }
     }

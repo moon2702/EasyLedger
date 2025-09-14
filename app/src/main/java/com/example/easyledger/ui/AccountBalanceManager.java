@@ -210,4 +210,281 @@ public class AccountBalanceManager {
         }
         return String.format("%s：%.2f", account.getName(), account.getBalance());
     }
+    
+    /**
+     * 处理删除账单的余额恢复
+     * @param bill 要删除的账单
+     * @return 更新结果
+     */
+    public BalanceUpdateResult handleDeleteBill(com.example.easyledger.database.Bill bill) {
+        if (bill == null) {
+            return new BalanceUpdateResult(false, "账单不能为空", null);
+        }
+        
+        try {
+            // 根据账单类型确定余额恢复逻辑
+            switch (bill.getType()) {
+                case EXPENSE:
+                    // 删除支出账单：恢复账户余额（增加金额）
+                    return handleExpenseBillDeletion(bill);
+                case INCOME:
+                    // 删除收入账单：减少账户余额
+                    return handleIncomeBillDeletion(bill);
+                case TRANSFER:
+                    // 删除转账账单：恢复转出账户余额，减少转入账户余额
+                    return handleTransferBillDeletion(bill);
+                case REPAYMENT:
+                    // 删除还款账单：恢复支出账户余额，减少信贷账户余额
+                    return handleRepaymentBillDeletion(bill);
+                default:
+                    return new BalanceUpdateResult(false, "未知的账单类型", null);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "删除账单时更新余额失败", e);
+            return new BalanceUpdateResult(false, "删除失败：" + e.getMessage(), null);
+        }
+    }
+    
+    /**
+     * 处理删除支出账单
+     */
+    private BalanceUpdateResult handleExpenseBillDeletion(com.example.easyledger.database.Bill bill) {
+        // 需要根据账户名称找到对应的账户对象
+        // 这里简化处理，实际应用中需要从数据库获取账户对象
+        return new BalanceUpdateResult(false, "需要实现根据账户名称获取账户对象的逻辑", null);
+    }
+    
+    /**
+     * 处理删除收入账单
+     */
+    private BalanceUpdateResult handleIncomeBillDeletion(com.example.easyledger.database.Bill bill) {
+        // 需要根据账户名称找到对应的账户对象
+        return new BalanceUpdateResult(false, "需要实现根据账户名称获取账户对象的逻辑", null);
+    }
+    
+    /**
+     * 处理删除转账账单
+     */
+    private BalanceUpdateResult handleTransferBillDeletion(com.example.easyledger.database.Bill bill) {
+        // 转账账单的账户字段可能包含"转出账户 -> 转入账户"的格式
+        return new BalanceUpdateResult(false, "需要实现转账账单删除的余额恢复逻辑", null);
+    }
+    
+    /**
+     * 处理删除还款账单
+     */
+    private BalanceUpdateResult handleRepaymentBillDeletion(com.example.easyledger.database.Bill bill) {
+        // 还款账单的账户字段可能包含"支出账户 -> 信贷账户"的格式
+        return new BalanceUpdateResult(false, "需要实现还款账单删除的余额恢复逻辑", null);
+    }
+    
+    /**
+     * 根据账户名称和金额恢复余额（用于删除支出账单）
+     * @param accountName 账户名称
+     * @param amount 金额
+     * @return 更新结果
+     */
+    public BalanceUpdateResult restoreExpenseAccountBalance(String accountName, double amount) {
+        if (accountName == null || accountName.isEmpty()) {
+            return new BalanceUpdateResult(false, "账户名称不能为空", null);
+        }
+        
+        if (amount <= 0) {
+            return new BalanceUpdateResult(false, "金额必须大于0", null);
+        }
+        
+        try {
+            // 获取所有账户
+            List<Account> allAccounts = accountViewModel.getAllAccounts().getValue();
+            if (allAccounts == null) {
+                return new BalanceUpdateResult(false, "无法获取账户列表", null);
+            }
+            
+            // 查找对应的账户
+            for (Account account : allAccounts) {
+                if (account.getName().equals(accountName)) {
+                    // 恢复余额（增加金额，因为删除了支出）
+                    return updateAccountBalance(account, amount, BalanceOperation.INCREASE);
+                }
+            }
+            
+            return new BalanceUpdateResult(false, "未找到对应的账户：" + accountName, null);
+            
+        } catch (Exception e) {
+            Log.e(TAG, "恢复支出账户余额失败", e);
+            return new BalanceUpdateResult(false, "恢复失败：" + e.getMessage(), null);
+        }
+    }
+    
+    /**
+     * 根据账户名称和金额减少余额（用于删除收入账单）
+     * @param accountName 账户名称
+     * @param amount 金额
+     * @return 更新结果
+     */
+    public BalanceUpdateResult reduceIncomeAccountBalance(String accountName, double amount) {
+        if (accountName == null || accountName.isEmpty()) {
+            return new BalanceUpdateResult(false, "账户名称不能为空", null);
+        }
+        
+        if (amount <= 0) {
+            return new BalanceUpdateResult(false, "金额必须大于0", null);
+        }
+        
+        try {
+            // 获取所有账户
+            List<Account> allAccounts = accountViewModel.getAllAccounts().getValue();
+            if (allAccounts == null) {
+                return new BalanceUpdateResult(false, "无法获取账户列表", null);
+            }
+            
+            // 查找对应的账户
+            for (Account account : allAccounts) {
+                if (account.getName().equals(accountName)) {
+                    // 减少余额（因为删除了收入）
+                    return updateAccountBalance(account, amount, BalanceOperation.DECREASE);
+                }
+            }
+            
+            return new BalanceUpdateResult(false, "未找到对应的账户：" + accountName, null);
+            
+        } catch (Exception e) {
+            Log.e(TAG, "减少收入账户余额失败", e);
+            return new BalanceUpdateResult(false, "减少失败：" + e.getMessage(), null);
+        }
+    }
+    
+    /**
+     * 根据账户名称和金额恢复余额（用于删除转账账单）
+     * 转账账单删除时：转出账户恢复余额，转入账户减少余额
+     * @param fromAccountName 转出账户名称
+     * @param toAccountName 转入账户名称
+     * @param amount 金额
+     * @return 更新结果
+     */
+    public BalanceUpdateResult restoreTransferAccountBalance(String fromAccountName, String toAccountName, double amount) {
+        if (fromAccountName == null || fromAccountName.isEmpty() || 
+            toAccountName == null || toAccountName.isEmpty()) {
+            return new BalanceUpdateResult(false, "转出账户和转入账户名称不能为空", null);
+        }
+        
+        if (amount <= 0) {
+            return new BalanceUpdateResult(false, "金额必须大于0", null);
+        }
+        
+        try {
+            // 获取所有账户
+            List<Account> allAccounts = accountViewModel.getAllAccounts().getValue();
+            if (allAccounts == null) {
+                return new BalanceUpdateResult(false, "无法获取账户列表", null);
+            }
+            
+            Account fromAccount = null;
+            Account toAccount = null;
+            
+            // 查找对应的账户
+            for (Account account : allAccounts) {
+                if (account.getName().equals(fromAccountName)) {
+                    fromAccount = account;
+                } else if (account.getName().equals(toAccountName)) {
+                    toAccount = account;
+                }
+            }
+            
+            if (fromAccount == null) {
+                return new BalanceUpdateResult(false, "未找到转出账户：" + fromAccountName, null);
+            }
+            
+            if (toAccount == null) {
+                return new BalanceUpdateResult(false, "未找到转入账户：" + toAccountName, null);
+            }
+            
+            // 先恢复转出账户余额（增加金额）
+            BalanceUpdateResult fromResult = updateAccountBalance(fromAccount, amount, BalanceOperation.INCREASE);
+            if (!fromResult.isSuccess()) {
+                return fromResult;
+            }
+            
+            // 再减少转入账户余额
+            BalanceUpdateResult toResult = updateAccountBalance(toAccount, amount, BalanceOperation.DECREASE);
+            if (!toResult.isSuccess()) {
+                // 如果减少失败，回滚转出账户的余额
+                updateAccountBalance(fromAccount, amount, BalanceOperation.DECREASE);
+                return new BalanceUpdateResult(false, "转入账户余额更新失败，已回滚转出账户余额", null);
+            }
+            
+            return new BalanceUpdateResult(true, "转账账单删除成功", null);
+            
+        } catch (Exception e) {
+            Log.e(TAG, "恢复转账账户余额失败", e);
+            return new BalanceUpdateResult(false, "恢复失败：" + e.getMessage(), null);
+        }
+    }
+    
+    /**
+     * 根据账户名称和金额恢复余额（用于删除还款账单）
+     * 还款账单删除时：支出账户恢复余额，信贷账户减少余额
+     * @param debtorAccountName 支出账户名称
+     * @param creditorAccountName 信贷账户名称
+     * @param amount 金额
+     * @return 更新结果
+     */
+    public BalanceUpdateResult restoreRepaymentAccountBalance(String debtorAccountName, String creditorAccountName, double amount) {
+        if (debtorAccountName == null || debtorAccountName.isEmpty() || 
+            creditorAccountName == null || creditorAccountName.isEmpty()) {
+            return new BalanceUpdateResult(false, "支出账户和信贷账户名称不能为空", null);
+        }
+        
+        if (amount <= 0) {
+            return new BalanceUpdateResult(false, "金额必须大于0", null);
+        }
+        
+        try {
+            // 获取所有账户
+            List<Account> allAccounts = accountViewModel.getAllAccounts().getValue();
+            if (allAccounts == null) {
+                return new BalanceUpdateResult(false, "无法获取账户列表", null);
+            }
+            
+            Account debtorAccount = null;
+            Account creditorAccount = null;
+            
+            // 查找对应的账户
+            for (Account account : allAccounts) {
+                if (account.getName().equals(debtorAccountName)) {
+                    debtorAccount = account;
+                } else if (account.getName().equals(creditorAccountName)) {
+                    creditorAccount = account;
+                }
+            }
+            
+            if (debtorAccount == null) {
+                return new BalanceUpdateResult(false, "未找到支出账户：" + debtorAccountName, null);
+            }
+            
+            if (creditorAccount == null) {
+                return new BalanceUpdateResult(false, "未找到信贷账户：" + creditorAccountName, null);
+            }
+            
+            // 先恢复支出账户余额（增加金额）
+            BalanceUpdateResult debtorResult = updateAccountBalance(debtorAccount, amount, BalanceOperation.INCREASE);
+            if (!debtorResult.isSuccess()) {
+                return debtorResult;
+            }
+            
+            // 再减少信贷账户余额
+            BalanceUpdateResult creditorResult = updateAccountBalance(creditorAccount, amount, BalanceOperation.DECREASE);
+            if (!creditorResult.isSuccess()) {
+                // 如果减少失败，回滚支出账户的余额
+                updateAccountBalance(debtorAccount, amount, BalanceOperation.DECREASE);
+                return new BalanceUpdateResult(false, "信贷账户余额更新失败，已回滚支出账户余额", null);
+            }
+            
+            return new BalanceUpdateResult(true, "还款账单删除成功", null);
+            
+        } catch (Exception e) {
+            Log.e(TAG, "恢复还款账户余额失败", e);
+            return new BalanceUpdateResult(false, "恢复失败：" + e.getMessage(), null);
+        }
+    }
 }

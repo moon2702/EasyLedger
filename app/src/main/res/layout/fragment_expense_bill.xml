@@ -157,18 +157,10 @@
         android:layout_marginBottom="16dp"
         android:background="@null" />
 
-    <TextView
-        android:id="@+id/textViewAccount"
+    <com.example.easyledger.ui.AccountSelectorView
+        android:id="@+id/accountSelector"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="选择账户"
-        android:clickable="true"
-        android:focusable="true"
-        android:textSize="16sp"
-        android:textColor="@color/primary"
-        android:layout_marginBottom="16dp"
-        android:drawableEnd="@drawable/ic_arrow_drop_down"
-        android:padding="8dp" />
+        android:layout_height="wrap_content" />
 
     <EditText
         android:id="@+id/editTextDate"

@@ -15,6 +15,8 @@ import com.example.easyledger.database.BillViewModel;
 import com.example.easyledger.BillAddActivity;
 import com.example.easyledger.database.Account;
 import com.example.easyledger.database.AccountViewModel;
+import com.example.easyledger.ui.AccountSelectorView;
+import com.example.easyledger.ui.AccountSelectorListener;
 import androidx.lifecycle.ViewModelProvider;
 import java.util.*;
 import android.widget.AdapterView.OnItemClickListener;
@@ -24,11 +26,11 @@ import java.util.List;
 import android.util.Log;
 import android.app.AlertDialog;
 
-public class ExpenseBillFragment extends Fragment implements BillSaveable {
+public class ExpenseBillFragment extends Fragment implements BillSaveable, AccountSelectorListener {
 
     private EditText editTextTitle;
     private EditText editTextAmount;
-    private TextView textViewAccount;
+    private AccountSelectorView accountSelector;
     private EditText editTextDate;
     private EditText editTextCategory;
     private Button btnCategoryAll;
@@ -43,8 +45,6 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable {
     private GridView gridSubCategories;
     private Button btnSaveBill;
     private BillViewModel billViewModel;
-    private List<String> accountList = new ArrayList<>();
-    private List<Account> accounts = new ArrayList<>(); // 存储账户对象
 
     // 类别和子类别数据
     private Map<String, List<String>> categoryMap;
@@ -60,21 +60,20 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable {
         // 初始化ViewModel
         billViewModel = new ViewModelProvider(requireActivity()).get(BillViewModel.class);
 
-        // 获取账户数据
-        loadAccounts();
-
         // 初始化类别数据
         initCategoryData();
 
         // 获取视图控件
         editTextTitle = root.findViewById(R.id.editTextTitle);
         editTextAmount = root.findViewById(R.id.editTextAmount);
-        textViewAccount = root.findViewById(R.id.textViewAccount);
+        accountSelector = root.findViewById(R.id.accountSelector);
         editTextDate = root.findViewById(R.id.editTextDate);
         editTextCategory = root.findViewById(R.id.editTextCategory);
 
-        // 设置账户选择点击事件
-        textViewAccount.setOnClickListener(v -> showAccountSelectionDialog());
+        // 设置账户选择器
+        accountSelector.setLifecycleOwner(getViewLifecycleOwner());
+        accountSelector.setAccountSelectorListener(this);
+        accountSelector.setHint("选择账户");
         btnCategoryAll = root.findViewById(R.id.btnCategoryAll);
         btnCategoryShopping = root.findViewById(R.id.btnCategoryShopping);
         btnCategoryFood = root.findViewById(R.id.btnCategoryFood);
@@ -136,57 +135,19 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable {
     }
 
     // 更新账户余额
-    private void updateAccountBalance(String accountName, double amount) {
-        // 获取AccountViewModel实例
-        AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
-
-        // 查找对应的账户
-        for (Account account : accounts) {
-            if (account.getName().equals(accountName)) {
-                // 支出账单，减少账户余额
-                double newBalance = account.getBalance() - amount;
-                account.setBalance(newBalance);
-                // 更新账户
-                accountViewModel.update(account);
-                break;
-            }
-        }
-    }
-
-    // 加载账户数据
-    private void loadAccounts() {
-        // 获取AccountViewModel实例
-        AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
-
-        // 观察账户数据变化
-        accountViewModel.getAllAccounts().observe(getViewLifecycleOwner(), new Observer<List<Account>>() {
-            @Override
-            public void onChanged(List<Account> accountsData) {
-                accountList.clear();
-                accounts.clear();
-                for (Account account : accountsData) {
-                    accountList.add(account.getName());
-                    accounts.add(account);
-                }
-            }
-        });
-    }
-
-    // 显示账户选择对话框
-    private void showAccountSelectionDialog() {
-        if (accountList.isEmpty()) {
-            Toast.makeText(getContext(), "暂无账户数据", Toast.LENGTH_SHORT).show();
+    private void updateAccountBalance(Account account, double amount) {
+        if (account == null) {
             return;
         }
+        
+        // 获取AccountViewModel实例
+        AccountViewModel accountViewModel = new ViewModelProvider(requireActivity()).get(AccountViewModel.class);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("选择账户");
-        builder.setItems(accountList.toArray(new String[0]), (dialog, which) -> {
-            // 设置选中的账户
-            String selectedAccount = accountList.get(which);
-            textViewAccount.setText(selectedAccount);
-        });
-        builder.show();
+        // 支出账单，减少账户余额
+        double newBalance = account.getBalance() - amount;
+        account.setBalance(newBalance);
+        // 更新账户
+        accountViewModel.update(account);
     }
 
     // 初始化类别数据
@@ -362,11 +323,11 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable {
             // 获取输入内容
             String title = editTextTitle.getText().toString().trim();
             String amountStr = editTextAmount.getText().toString().trim();
-            String account = textViewAccount.getText().toString().trim();
             String dateStr = editTextDate.getText().toString().trim();
+            Account selectedAccount = accountSelector.getSelectedAccount();
 
             // 验证输入
-            if (title.isEmpty() || amountStr.isEmpty() || account.isEmpty() || dateStr.isEmpty()) {
+            if (title.isEmpty() || amountStr.isEmpty() || selectedAccount == null || dateStr.isEmpty()) {
                 Toast.makeText(getContext(), "请填写所有必填字段", Toast.LENGTH_SHORT).show();
                 return false;
             }
@@ -387,13 +348,13 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable {
             java.util.Date date = new java.util.Date();
 
             // 创建Bill对象
-            Bill bill = new Bill(title, "", date, amount, BillType.EXPENSE, finalCategory, account);
+            Bill bill = new Bill(title, "", date, amount, BillType.EXPENSE, finalCategory, selectedAccount.getName());
 
             // 保存账单
             billViewModel.insert(bill);
 
             // 更新账户余额
-            updateAccountBalance(account, amount);
+            updateAccountBalance(selectedAccount, amount);
 
             Toast.makeText(getContext(), "保存成功", Toast.LENGTH_SHORT).show();
             return true;
@@ -415,7 +376,7 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable {
         // 填充UI控件
         editTextTitle.setText(bill.getTitle());
         editTextAmount.setText(String.valueOf(bill.getAmount()));
-        textViewAccount.setText(bill.getAccount());
+        accountSelector.setSelectedAccountByName(bill.getAccount());
         
         // 设置日期（简化处理，实际应用中应使用SimpleDateFormat）
         java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd");
@@ -443,6 +404,24 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable {
                 }
             }
         }
+        return true;
+    }
+
+    // AccountSelectorListener接口实现
+    @Override
+    public void onAccountSelected(Account selectedAccount) {
+        // 账户被选择时的处理逻辑
+        // 可以在这里添加额外的业务逻辑，比如验证账户余额等
+    }
+
+    @Override
+    public void onAccountCleared() {
+        // 账户选择被清除时的处理逻辑
+    }
+
+    @Override
+    public boolean onAccountSelectorClicked() {
+        // 返回true允许显示选择对话框
         return true;
     }
 }

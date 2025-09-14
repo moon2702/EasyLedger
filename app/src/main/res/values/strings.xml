@@ -21,4 +21,5 @@
     <string name="snack_quick_add_placeholder">快速记一笔（占位）</string>
     <string name="home_switch_ledger">切换账本</string>
     <string name="home_search_bills">查询账单</string>
+    <string name="selector_hint">请选择</string>
 </resources>

@@ -211,18 +211,34 @@ public class BillAddActivity extends AppCompatActivity {
      * 更新当前Fragment的账单数据
      */
     private void updateCurrentFragmentBill() {
-        if (currentBill == null) return;
+        if (currentBill == null) {
+            Log.w(TAG, "currentBill is null, cannot update fragment");
+            return;
+        }
         
-        int currentItem = viewPager.getCurrentItem();
-        Fragment currentFragment = adapter.getFragment(currentItem);
-        
-        // 如果Fragment已创建且实现了BillSaveable接口
-        if (currentFragment instanceof BillSaveable) {
-            BillSaveable saveableFragment = (BillSaveable) currentFragment;
-            saveableFragment.updateBill(currentBill);
-        } else {
-            // 如果Fragment尚未创建，尝试等待一段时间后再试
-            new android.os.Handler().postDelayed(this::updateCurrentFragmentBill, 100);
+        try {
+            int currentItem = viewPager.getCurrentItem();
+            Log.d(TAG, "Updating fragment for current item: " + currentItem);
+            
+            // 使用安全的方法获取Fragment
+            Fragment currentFragment = adapter.getFragmentSafely(currentItem);
+            
+            // 如果Fragment已创建且实现了BillSaveable接口
+            if (currentFragment instanceof BillSaveable) {
+                BillSaveable saveableFragment = (BillSaveable) currentFragment;
+                boolean success = saveableFragment.updateBill(currentBill);
+                if (success) {
+                    Log.d(TAG, "Successfully updated fragment for position: " + currentItem);
+                } else {
+                    Log.w(TAG, "Failed to update fragment for position: " + currentItem);
+                }
+            } else {
+                Log.w(TAG, "Fragment not ready or not BillSaveable, retrying...");
+                // 如果Fragment尚未创建，尝试等待一段时间后再试
+                new android.os.Handler().postDelayed(this::updateCurrentFragmentBill, 100);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating current fragment bill", e);
         }
     }
 
@@ -246,46 +262,69 @@ public class BillAddActivity extends AppCompatActivity {
     }
 
     public void saveCurrentBill() {
-        int currentItem = viewPager.getCurrentItem();
-        Fragment currentFragment = adapter.getFragment(currentItem);
+        try {
+            int currentItem = viewPager.getCurrentItem();
+            Log.d(TAG, "Saving current bill for item: " + currentItem);
+            
+            // 使用安全的方法获取Fragment
+            Fragment currentFragment = adapter.getFragmentSafely(currentItem);
 
-        if (currentFragment instanceof BillSaveable) {
-            BillSaveable saveableFragment = (BillSaveable) currentFragment;
-            boolean saved;
-            if (billId != -1 && currentBill != null) {
-                // 编辑模式下，先恢复旧账户的余额
-                String oldAccount = currentBill.getAccount();
-                double oldAmount = currentBill.getAmount();
+            if (currentFragment instanceof BillSaveable) {
+                BillSaveable saveableFragment = (BillSaveable) currentFragment;
+                boolean saved = false;
                 
-                // 恢复旧账户余额
-                AccountViewModel accountViewModel = new ViewModelProvider(this).get(AccountViewModel.class);
-                List<Account> allAccounts = accountViewModel.getAllAccounts().getValue();
-                if (allAccounts != null) {
-                    for (Account account : allAccounts) {
-                        if (account.getName().equals(oldAccount)) {
-                            // 恢复余额（增加回旧金额）
-                            double newBalance = account.getBalance() + oldAmount;
-                            account.setBalance(newBalance);
-                            accountViewModel.update(account);
-                            break;
+                try {
+                    if (billId != -1 && currentBill != null) {
+                        // 编辑模式下，先恢复旧账户的余额
+                        String oldAccount = currentBill.getAccount();
+                        double oldAmount = currentBill.getAmount();
+                        
+                        // 恢复旧账户余额
+                        AccountViewModel accountViewModel = new ViewModelProvider(this).get(AccountViewModel.class);
+                        List<Account> allAccounts = accountViewModel.getAllAccounts().getValue();
+                        if (allAccounts != null) {
+                            for (Account account : allAccounts) {
+                                if (account.getName().equals(oldAccount)) {
+                                    // 恢复余额（增加回旧金额）
+                                    double newBalance = account.getBalance() + oldAmount;
+                                    account.setBalance(newBalance);
+                                    accountViewModel.update(account);
+                                    break;
+                                }
+                            }
                         }
+                        
+                        // 然后保存新账单
+                        saved = saveableFragment.saveBill();
+                        if (saved) {
+                            // 保存成功后，删除原账单
+                            billViewModel.delete(currentBill);
+                        }
+                    } else {
+                        // 新增模式
+                        saved = saveableFragment.saveBill();
                     }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error during save operation", e);
+                    Snackbar.make(findViewById(android.R.id.content), "保存失败: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                    return;
                 }
                 
-                // 然后保存新账单
-                saved = saveableFragment.saveBill();
                 if (saved) {
-                    // 保存成功后，删除原账单
-                    billViewModel.delete(currentBill);
+                    Log.d(TAG, "Bill saved successfully");
+                    // 保存成功后关闭Activity
+                    finish();
+                } else {
+                    Log.w(TAG, "Failed to save bill");
+                    Snackbar.make(findViewById(android.R.id.content), "保存失败", Snackbar.LENGTH_SHORT).show();
                 }
             } else {
-                // 新增模式
-                saved = saveableFragment.saveBill();
+                Log.e(TAG, "Current fragment is not BillSaveable or is null");
+                Snackbar.make(findViewById(android.R.id.content), "当前页面不支持保存", Snackbar.LENGTH_SHORT).show();
             }
-            if (saved) {
-                // 保存成功后关闭Activity
-                finish();
-            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in saveCurrentBill", e);
+            Snackbar.make(findViewById(android.R.id.content), "保存时发生错误", Snackbar.LENGTH_SHORT).show();
         }
     }
 }

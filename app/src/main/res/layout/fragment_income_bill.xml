@@ -52,14 +52,10 @@
         android:layout_marginBottom="16dp"
         android:background="@null" />
 
-    <TextView
+    <com.example.easyledger.ui.AccountSelectorView
         android:id="@+id/editTextAccount"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="选择账户"
-        android:inputType="text"
-        android:layout_marginBottom="16dp"
-        android:background="@null" />
+        android:layout_height="wrap_content" />
 
     <EditText
         android:id="@+id/editTextDate"

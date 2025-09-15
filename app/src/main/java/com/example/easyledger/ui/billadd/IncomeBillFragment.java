@@ -54,7 +54,7 @@ public class IncomeBillFragment extends Fragment implements BillSaveable, Accoun
             }
 
             // 初始化余额管理器
-            balanceManager = new AccountBalanceManager(requireContext());
+            balanceManager = new AccountBalanceManager(requireActivity());
 
             // 获取视图控件
             editTextTitle = root.findViewById(R.id.editTextTitle);

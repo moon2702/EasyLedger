@@ -28,7 +28,8 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.AccountV
             Account current = accounts.get(position);
             holder.nameTextView.setText(current.getName());
             holder.typeTextView.setText(current.getType());
-            holder.balanceTextView.setText(String.valueOf(current.getBalance()));
+            // 使用格式化余额显示，支持信贷账户
+            holder.balanceTextView.setText(current.getFormattedBalance());
         }
     }
 

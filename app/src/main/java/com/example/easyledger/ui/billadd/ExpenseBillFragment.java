@@ -63,7 +63,7 @@ public class ExpenseBillFragment extends Fragment implements BillSaveable, Accou
         billViewModel = new ViewModelProvider(requireActivity()).get(BillViewModel.class);
         
         // 初始化余额管理器
-        balanceManager = new AccountBalanceManager(requireContext());
+        balanceManager = new AccountBalanceManager(requireActivity());
 
         // 初始化类别数据
         initCategoryData();

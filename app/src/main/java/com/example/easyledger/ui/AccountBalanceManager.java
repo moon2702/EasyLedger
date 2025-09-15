@@ -19,8 +19,23 @@ public class AccountBalanceManager {
     
     public AccountBalanceManager(Context context) {
         this.context = context;
-        this.accountViewModel = new ViewModelProvider((androidx.fragment.app.FragmentActivity) context)
-                .get(AccountViewModel.class);
+        // 尝试从Context获取FragmentActivity
+        androidx.fragment.app.FragmentActivity activity = null;
+        if (context instanceof androidx.fragment.app.FragmentActivity) {
+            activity = (androidx.fragment.app.FragmentActivity) context;
+        } else if (context instanceof android.content.ContextWrapper) {
+            // 尝试从ContextWrapper中获取Activity
+            android.content.Context baseContext = ((android.content.ContextWrapper) context).getBaseContext();
+            if (baseContext instanceof androidx.fragment.app.FragmentActivity) {
+                activity = (androidx.fragment.app.FragmentActivity) baseContext;
+            }
+        }
+        
+        if (activity != null) {
+            this.accountViewModel = new ViewModelProvider(activity).get(AccountViewModel.class);
+        } else {
+            throw new IllegalArgumentException("Context must be a FragmentActivity or have a FragmentActivity as base context");
+        }
     }
     
     /**
@@ -67,6 +82,12 @@ public class AccountBalanceManager {
         }
         
         try {
+            // 信贷账户的特殊处理
+            if (account.isCreditAccount()) {
+                return handleCreditAccountUpdate(account, amount, operation);
+            }
+            
+            // 正常账户的处理逻辑
             double currentBalance = account.getBalance();
             double newBalance;
             
@@ -97,6 +118,53 @@ public class AccountBalanceManager {
         } catch (Exception e) {
             Log.e(TAG, "更新账户余额失败", e);
             return new BalanceUpdateResult(false, "更新失败：" + e.getMessage(), null);
+        }
+    }
+    
+    /**
+     * 处理信贷账户的余额更新
+     * @param account 信贷账户
+     * @param amount 金额
+     * @param operation 操作类型（增加/减少）
+     * @return 更新结果
+     */
+    private BalanceUpdateResult handleCreditAccountUpdate(Account account, double amount, BalanceOperation operation) {
+        double currentUsedCredit = account.getUsedCredit();
+        double currentAvailableCredit = account.getAvailableCredit();
+        
+        switch (operation) {
+            case INCREASE:
+                // 还款：减少使用额度
+                if (!account.updateCreditUsage(amount, false)) {
+                    return new BalanceUpdateResult(false, "信贷账户还款处理失败", null);
+                }
+                accountViewModel.update(account);
+                
+                Log.d(TAG, String.format("信贷账户 %s 还款成功：已用额度 %.2f -> %.2f (还款金额：%.2f)", 
+                    account.getName(), currentUsedCredit, account.getUsedCredit(), amount));
+                
+                return new BalanceUpdateResult(true, "还款成功", account);
+                
+            case DECREASE:
+                // 支出：增加使用额度
+                if (account.isOverCreditLimit(amount)) {
+                    return new BalanceUpdateResult(false, 
+                        String.format("超出信用额度，可用额度：%.2f，需要：%.2f", 
+                            currentAvailableCredit, amount), null);
+                }
+                
+                if (!account.updateCreditUsage(amount, true)) {
+                    return new BalanceUpdateResult(false, "信贷账户支出处理失败", null);
+                }
+                accountViewModel.update(account);
+                
+                Log.d(TAG, String.format("信贷账户 %s 支出成功：已用额度 %.2f -> %.2f (支出金额：%.2f)", 
+                    account.getName(), currentUsedCredit, account.getUsedCredit(), amount));
+                
+                return new BalanceUpdateResult(true, "支出成功", account);
+                
+            default:
+                return new BalanceUpdateResult(false, "未知的操作类型", null);
         }
     }
     
@@ -169,13 +237,18 @@ public class AccountBalanceManager {
             return new BalanceUpdateResult(false, "支出账户和信贷账户不能相同", null);
         }
         
+        // 验证信贷账户
+        if (!creditorAccount.isCreditAccount()) {
+            return new BalanceUpdateResult(false, "目标账户必须是信贷账户", null);
+        }
+        
         // 先减少支出账户余额
         BalanceUpdateResult decreaseResult = updateAccountBalance(debtorAccount, amount, BalanceOperation.DECREASE);
         if (!decreaseResult.isSuccess()) {
             return decreaseResult;
         }
         
-        // 再增加信贷账户余额
+        // 再增加信贷账户余额（还款会减少已使用的信用额度）
         BalanceUpdateResult increaseResult = updateAccountBalance(creditorAccount, amount, BalanceOperation.INCREASE);
         if (!increaseResult.isSuccess()) {
             // 如果增加失败，需要回滚支出账户的余额
@@ -196,7 +269,14 @@ public class AccountBalanceManager {
         if (account == null || amount <= 0) {
             return false;
         }
-        return account.getBalance() >= amount;
+        
+        if (account.isCreditAccount()) {
+            // 信贷账户：检查可用信用额度
+            return account.getAvailableCredit() >= amount;
+        } else {
+            // 正常账户：检查余额
+            return account.getBalance() >= amount;
+        }
     }
     
     /**
@@ -208,7 +288,7 @@ public class AccountBalanceManager {
         if (account == null) {
             return "账户信息无效";
         }
-        return String.format("%s：%.2f", account.getName(), account.getBalance());
+        return String.format("%s：%s", account.getName(), account.getFormattedBalance());
     }
     
     /**

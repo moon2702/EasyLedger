@@ -48,7 +48,7 @@ public class TransferBillFragment extends Fragment implements BillSaveable, Acco
             }
 
             // 初始化余额管理器
-            balanceManager = new AccountBalanceManager(requireContext());
+            balanceManager = new AccountBalanceManager(requireActivity());
 
             // 获取视图控件
             editTextAmount = root.findViewById(R.id.editTextAmount);

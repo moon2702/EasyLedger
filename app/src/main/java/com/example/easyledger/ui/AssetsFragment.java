@@ -165,10 +165,20 @@ public class AssetsFragment extends Fragment {
         double receivableTotal = 0;
         double investmentTotal = 0;
         double investmentProfit = 0;
+        double creditUsedTotal = 0; // 信贷账户已用额度总计
 
         for (Account account : accounts) {
-            // 这里假设Account类有getType()和getBalance()方法
-            // 根据账户类型分类计算
+            // 处理信贷账户
+            if (account.isCreditAccount()) {
+                // 信贷账户的已用额度计入应付和总负债
+                double usedCredit = account.getUsedCredit();
+                creditUsedTotal += usedCredit;
+                payableTotal += usedCredit;
+                totalLiability += usedCredit;
+                continue; // 信贷账户不参与其他类型计算
+            }
+            
+            // 根据账户类型分类计算（仅正常账户）
             switch (account.getType()) {
                 case "现金":
                 case "银行卡":
@@ -205,7 +215,20 @@ public class AssetsFragment extends Fragment {
         liabilityValueTextView.setText(decimalFormat.format(totalLiability));
         reimbursableValueTextView.setText("可报: " + decimalFormat.format(reimbursementTotal));
         reimbursedValueTextView.setText("已报: " + decimalFormat.format(reimbursedTotal));
+        
+        // 应付金额显示：包含信贷账户已用额度
+        // if (creditUsedTotal > 0) {
+        //     double otherPayable = payableTotal - creditUsedTotal;
+        //     if (otherPayable > 0) {
+        //         payableValueTextView.setText("应付: " + decimalFormat.format(payableTotal) + 
+        //             " (信贷: " + decimalFormat.format(creditUsedTotal) + ")");
+        //     } else {
+        //         payableValueTextView.setText("应付: " + decimalFormat.format(creditUsedTotal) + " (信贷)");
+        //     }
+        // } else {
         payableValueTextView.setText("应付: " + decimalFormat.format(payableTotal));
+        // }
+        
         receivableValueTextView.setText("应收: " + decimalFormat.format(receivableTotal));
         investmentTotalValueTextView.setText("总额: " + decimalFormat.format(investmentTotal));
         investmentProfitValueTextView.setText("盈亏: " + decimalFormat.format(investmentProfit));

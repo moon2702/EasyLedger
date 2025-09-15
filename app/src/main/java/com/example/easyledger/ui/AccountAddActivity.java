@@ -126,7 +126,14 @@ public class AccountAddActivity extends AppCompatActivity {
 
     private void populateFields(Account account) {
         nameEditText.setText(account.getName());
-        balanceEditText.setText(String.valueOf(account.getBalance()));
+        
+        // 根据账户类型显示不同的值
+        if (account.isCreditAccount()) {
+            balanceEditText.setText(String.valueOf(account.getCreditLimit()));
+        } else {
+            balanceEditText.setText(String.valueOf(account.getBalance()));
+        }
+        
         descriptionEditText.setText(account.getDescription());
         
         // 设置账户类型
@@ -198,8 +205,22 @@ public class AccountAddActivity extends AppCompatActivity {
             currentAccount.setName(name);
             currentAccount.setType(type);
             currentAccount.setCategory(category);
-            currentAccount.setBalance(balance);
             currentAccount.setDescription(description);
+            
+            // 根据账户类型更新不同字段
+            if ("CREDIT".equals(category)) {
+                // 信贷账户：更新信用额度
+                currentAccount.setCreditLimit(balance);
+                // 信贷账户的余额字段保持为0
+                currentAccount.setBalance(0);
+            } else {
+                // 正常账户：更新余额
+                currentAccount.setBalance(balance);
+                // 正常账户的信用额度保持为0
+                currentAccount.setCreditLimit(0);
+                currentAccount.setUsedCredit(0);
+            }
+            
             accountViewModel.update(currentAccount);
             Toast.makeText(this, "账户更新成功", Toast.LENGTH_SHORT).show();
         } else {

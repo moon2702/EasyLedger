@@ -73,4 +73,28 @@ public interface AccountDao {
     // 查询所有账户的总余额（返回LiveData）
     @Query("SELECT SUM(balance) FROM account")
     LiveData<Double> getTotalBalanceLiveData();
+
+    // 根据类别查询账户
+    @Query("SELECT * FROM account WHERE category = :category ORDER BY name ASC")
+    List<Account> getAccountsByCategory(String category);
+
+    // 根据类别查询账户（返回LiveData）
+    @Query("SELECT * FROM account WHERE category = :category ORDER BY name ASC")
+    LiveData<List<Account>> getAccountsByCategoryLiveData(String category);
+
+    // 查询正常账户
+    @Query("SELECT * FROM account WHERE category = 'NORMAL' ORDER BY name ASC")
+    List<Account> getNormalAccounts();
+
+    // 查询正常账户（返回LiveData）
+    @Query("SELECT * FROM account WHERE category = 'NORMAL' ORDER BY name ASC")
+    LiveData<List<Account>> getNormalAccountsLiveData();
+
+    // 查询信贷账户
+    @Query("SELECT * FROM account WHERE category = 'CREDIT' ORDER BY name ASC")
+    List<Account> getCreditAccounts();
+
+    // 查询信贷账户（返回LiveData）
+    @Query("SELECT * FROM account WHERE category = 'CREDIT' ORDER BY name ASC")
+    LiveData<List<Account>> getCreditAccountsLiveData();
 }

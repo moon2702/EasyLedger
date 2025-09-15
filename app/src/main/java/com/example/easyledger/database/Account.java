@@ -1,6 +1,7 @@
 package com.example.easyledger.database;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
@@ -14,13 +15,25 @@ public class Account {
     private String type;       // 账户类型(银行卡、现金、支付宝等)
     private double balance;    // 账户余额
     private String description; // 账户描述
+    private String category;   // 账户类别(NORMAL-正常账户, CREDIT-信贷账户)
 
-    // 构造函数
+    // 带类别参数的构造函数（Room使用这个）
+    public Account(String name, String type, double balance, String description, String category) {
+        this.name = name;
+        this.type = type;
+        this.balance = balance;
+        this.description = description;
+        this.category = category;
+    }
+
+    // 简化构造函数（忽略，用于向后兼容）
+    @Ignore
     public Account(String name, String type, double balance, String description) {
         this.name = name;
         this.type = type;
         this.balance = balance;
         this.description = description;
+        this.category = "NORMAL"; // 默认为正常账户
     }
 
     // Getter和Setter方法
@@ -62,5 +75,13 @@ public class Account {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

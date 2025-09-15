@@ -79,4 +79,19 @@ public class AccountRepository {
     public LiveData<Double> getTotalBalance() {
         return accountDao.getTotalBalanceLiveData();
     }
+
+    // 根据类别查询账户
+    public LiveData<List<Account>> getAccountsByCategory(String category) {
+        return accountDao.getAccountsByCategoryLiveData(category);
+    }
+
+    // 查询正常账户
+    public LiveData<List<Account>> getNormalAccounts() {
+        return accountDao.getNormalAccountsLiveData();
+    }
+
+    // 查询信贷账户
+    public LiveData<List<Account>> getCreditAccounts() {
+        return accountDao.getCreditAccountsLiveData();
+    }
 }

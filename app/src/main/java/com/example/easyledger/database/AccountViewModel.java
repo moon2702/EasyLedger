@@ -70,4 +70,19 @@ public class AccountViewModel extends AndroidViewModel {
     public LiveData<Double> getTotalBalance() {
         return repository.getTotalBalance();
     }
+
+    // 根据类别查询账户
+    public LiveData<List<Account>> getAccountsByCategory(String category) {
+        return repository.getAccountsByCategory(category);
+    }
+
+    // 查询正常账户
+    public LiveData<List<Account>> getNormalAccounts() {
+        return repository.getNormalAccounts();
+    }
+
+    // 查询信贷账户
+    public LiveData<List<Account>> getCreditAccounts() {
+        return repository.getCreditAccounts();
+    }
 }

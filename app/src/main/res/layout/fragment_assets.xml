@@ -259,10 +259,32 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/accounts_recycler_view"
         android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/accounts_title"
+        tools:listitem="@layout/item_account" />
+
+    <!-- 信贷账户标题 -->
+    <TextView
+        android:id="@+id/credit_accounts_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="信贷账户"
+        android:textColor="@color/on_background"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@+id/accounts_recycler_view" />
+
+    <!-- 信贷账户列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/credit_accounts_recycler_view"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/accounts_title"
+        app:layout_constraintTop_toBottomOf="@+id/credit_accounts_title"
         tools:listitem="@layout/item_account" />
 
     <!-- 添加按钮 -->

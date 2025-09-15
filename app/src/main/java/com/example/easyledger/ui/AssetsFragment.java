@@ -26,7 +26,8 @@ import java.util.List;
 
 public class AssetsFragment extends Fragment {
     private AccountViewModel accountViewModel;
-    private AccountAdapter adapter;
+    private AccountAdapter normalAdapter;
+    private AccountAdapter creditAdapter;
     private TextView netAssetValueTextView;
     private TextView totalAssetValueTextView;
     private TextView liabilityValueTextView;
@@ -64,17 +65,33 @@ public class AssetsFragment extends Fragment {
         investmentTotalValueTextView = investmentCard.findViewById(R.id.investment_total_value);
         investmentProfitValueTextView = investmentCard.findViewById(R.id.investment_profit_value);
 
-        // 初始化RecyclerView
-        RecyclerView recyclerView = view.findViewById(R.id.accounts_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
+        // 初始化正常账户RecyclerView
+        RecyclerView normalRecyclerView = view.findViewById(R.id.accounts_recycler_view);
+        normalRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        normalRecyclerView.setHasFixedSize(true);
 
-        // 初始化Adapter
-        adapter = new AccountAdapter();
-        recyclerView.setAdapter(adapter);
+        // 初始化信贷账户RecyclerView
+        RecyclerView creditRecyclerView = view.findViewById(R.id.credit_accounts_recycler_view);
+        creditRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        creditRecyclerView.setHasFixedSize(true);
 
-        // 设置列表项点击事件
-        adapter.setOnItemClickListener(account -> {
+        // 初始化Adapters
+        normalAdapter = new AccountAdapter();
+        creditAdapter = new AccountAdapter();
+        
+        normalRecyclerView.setAdapter(normalAdapter);
+        creditRecyclerView.setAdapter(creditAdapter);
+
+        // 设置正常账户列表项点击事件
+        normalAdapter.setOnItemClickListener(account -> {
+            // 跳转到账户编辑界面
+            Intent intent = new Intent(getActivity(), AccountAddActivity.class);
+            intent.putExtra(AccountAddActivity.EXTRA_ACCOUNT_ID, account.getId());
+            startActivity(intent);
+        });
+
+        // 设置信贷账户列表项点击事件
+        creditAdapter.setOnItemClickListener(account -> {
             // 跳转到账户编辑界面
             Intent intent = new Intent(getActivity(), AccountAddActivity.class);
             intent.putExtra(AccountAddActivity.EXTRA_ACCOUNT_ID, account.getId());
@@ -84,11 +101,26 @@ public class AssetsFragment extends Fragment {
         // 初始化ViewModel
         accountViewModel = new ViewModelProvider(this).get(AccountViewModel.class);
 
-        // 观察账户数据
+        // 观察正常账户数据
+        accountViewModel.getNormalAccounts().observe(getViewLifecycleOwner(), new Observer<List<Account>>() {
+            @Override
+            public void onChanged(List<Account> accounts) {
+                normalAdapter.setAccounts(accounts);
+            }
+        });
+
+        // 观察信贷账户数据
+        accountViewModel.getCreditAccounts().observe(getViewLifecycleOwner(), new Observer<List<Account>>() {
+            @Override
+            public void onChanged(List<Account> accounts) {
+                creditAdapter.setAccounts(accounts);
+            }
+        });
+
+        // 观察所有账户数据（用于计算资产总值）
         accountViewModel.getAllAccounts().observe(getViewLifecycleOwner(), new Observer<List<Account>>() {
             @Override
             public void onChanged(List<Account> accounts) {
-                adapter.setAccounts(accounts);
                 updateAssetValues(accounts);
             }
         });

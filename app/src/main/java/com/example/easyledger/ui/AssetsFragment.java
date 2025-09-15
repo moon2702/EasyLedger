@@ -182,6 +182,9 @@ public class AssetsFragment extends Fragment {
             switch (account.getType()) {
                 case "现金":
                 case "银行卡":
+                case "微信":
+                case "支付宝":
+                case "其他":
                     totalAsset += account.getBalance();
                     break;
                 case "负债":

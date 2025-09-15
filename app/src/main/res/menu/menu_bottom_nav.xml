@@ -12,6 +12,8 @@
         android:id="@+id/nav_assets"
         android:title="@string/title_assets"
         android:icon="@drawable/ic_nav_assets" />
+    <!-- 暂时隐藏stats和settings按钮 -->
+    <!--
     <item
         android:id="@+id/nav_stats"
         android:title="@string/title_stats"
@@ -20,5 +22,6 @@
         android:id="@+id/nav_settings"
         android:title="@string/title_settings"
         android:icon="@drawable/ic_nav_settings" />
+    -->
 </menu>
 

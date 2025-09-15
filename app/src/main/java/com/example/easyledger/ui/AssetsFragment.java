@@ -75,8 +75,10 @@ public class AssetsFragment extends Fragment {
 
         // 设置列表项点击事件
         adapter.setOnItemClickListener(account -> {
-            // 在这里处理账户点击事件
-            Snackbar.make(view, "查看账户: " + account.getName(), Snackbar.LENGTH_SHORT).show();
+            // 跳转到账户编辑界面
+            Intent intent = new Intent(getActivity(), AccountAddActivity.class);
+            intent.putExtra(AccountAddActivity.EXTRA_ACCOUNT_ID, account.getId());
+            startActivity(intent);
         });
 
         // 初始化ViewModel
